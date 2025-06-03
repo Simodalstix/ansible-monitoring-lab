@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  connection: local
+  become: true
+  tasks:
+    - name: Update apt cache and install git
+      apt:
+        update_cache: yes
+        name: git
+        state: present

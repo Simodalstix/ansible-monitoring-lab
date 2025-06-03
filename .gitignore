@@ -1,0 +1,72 @@
+# ──────────────────────────────────────────────────────────────
+# 1) Python artifacts (for modules/plugins/playbooks written in Python
+#    or if you keep a local virtualenv in the repo)
+# ──────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtualenv/venv folders
+.env/
+.venv/
+venv/
+env/
+
+# If you install Ansible via pip locally, you might also see:
+# pip-wheel-metadata/ 
+# *.egg-info/
+
+# ──────────────────────────────────────────────────────────────
+# 2) Ansible‐specific
+# ──────────────────────────────────────────────────────────────
+
+# Retry files created automatically when a play fails.
+*.retry
+
+# Vault password files (if you keep them in the repo root or alongside playbooks)
+# (Rename or remove these if you store vault passwords elsewhere.)
+vault_pass.txt
+*.vault_password
+
+# Any local inventory override (if you create a “hosts” or “inventory” file only for your machine)
+# Comment out the next line if you track inventory under version control.
+inventory/local
+inventory/hosts
+
+# Logs or debug dumps
+*.log
+
+# ──────────────────────────────────────────────────────────────
+# 3) Editor, IDE & OS temp files
+# ──────────────────────────────────────────────────────────────
+
+# VS Code workspace settings
+.vscode/
+
+# JetBrains IDEs (PyCharm, IntelliJ, RubyMine, etc.)
+.idea/
+
+# Vim/Vi swap files and backups
+*.swp
+*.swo
+*~
+
+# macOS filesystem metadata
+.DS_Store
+
+# Windows thumbnail cache, etc.
+Thumbs.db
+Desktop.ini
+
+# ──────────────────────────────────────────────────────────────
+# 4) Miscellaneous
+# ──────────────────────────────────────────────────────────────
+
+# Temporary files
+*.tmp
+*.bak
+
+# SSH agent sockets (if ever committed accidentally)
+ssh-agent-*
+
+# End of .gitignore

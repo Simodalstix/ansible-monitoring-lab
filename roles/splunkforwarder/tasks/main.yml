@@ -1,0 +1,4 @@
+# tasks/main.yml for role: splunkforwarder
+- name: Placeholder task for splunkforwarder
+  debug:
+    msg: "Running role: splunkforwarder"

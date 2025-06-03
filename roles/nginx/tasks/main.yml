@@ -1,0 +1,4 @@
+# tasks/main.yml for role: nginx
+- name: Placeholder task for nginx
+  debug:
+    msg: "Running role: nginx"

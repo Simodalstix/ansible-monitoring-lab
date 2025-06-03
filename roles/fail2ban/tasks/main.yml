@@ -1,0 +1,4 @@
+# tasks/main.yml for role: fail2ban
+- name: Placeholder task for fail2ban
+  debug:
+    msg: "Running role: fail2ban"

@@ -1,0 +1,4 @@
+# tasks/main.yml for role: common
+- name: Placeholder task for common
+  debug:
+    msg: "Running role: common"

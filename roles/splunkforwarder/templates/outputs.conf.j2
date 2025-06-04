@@ -2,7 +2,6 @@
 defaultGroup = default-autolb-group
 
 [tcpout:default-autolb-group]
-server = {{ splunk_server }}
+server = {{ splunk_hec_receiver }}
 
-[telemetry]
-disabled = true
+[tcpout-server://{{ splunk_hec_receiver }}]

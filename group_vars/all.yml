@@ -1,4 +1,0 @@
-ansible_python_interpreter: /usr/bin/python3
-
-splunk_forwarder_url: "https://download.splunk.com/products/universalforwarder/releases/9.2.0/linux/splunkforwarder-9.2.0-b6b9c8185839-Linux-x86_64.tgz"
-splunk_hec_receiver: "192.168.56.1:9997"

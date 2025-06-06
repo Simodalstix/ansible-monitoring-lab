@@ -1,0 +1,50 @@
+---
+- name: Download Splunk Universal Forwarder RPM
+  ansible.builtin.get_url:
+    url: "{{ splunk_download_url }}"
+    dest: "/tmp/splunkforwarder-{{ splunk_forwarder_version }}.rpm"
+    mode: "0644"
+
+- name: Install Splunk Forwarder RPM
+  ansible.builtin.yum:
+    name: "/tmp/splunkforwarder-{{ splunk_forwarder_version }}.rpm"
+    state: present
+
+- name: Ensure Splunk service is enabled
+  ansible.builtin.command:
+    cmd: "{{ splunk_install_dir }}/bin/splunk enable boot-start -user splunk"
+  args:
+    creates: /etc/systemd/system/splunkforwarder.service
+
+- name: Start Splunk forwarder (ignore failure on first run)
+  ansible.builtin.systemd:
+    name: splunkforwarder
+    state: started
+  ignore_errors: yes
+
+- name: Configure Splunk Admin credentials
+  ansible.builtin.command:
+    cmd: "{{ splunk_install_dir }}/bin/splunk edit user {{ splunk_admin_user }} -password '{{ splunk_admin_password }}' -role admin -auth admin:changeme"
+  args:
+    creates: "{{ splunk_install_dir }}/etc/passwd"
+
+- name: Configure Splunk to forward to central indexer
+  ansible.builtin.command:
+    cmd: "{{ splunk_install_dir }}/bin/splunk add forward-server {{ splunk_server }}:{{ splunk_server_port }} -auth {{ splunk_admin_user }}:{{ splunk_admin_password }}"
+  register: forward_server
+  changed_when: "'already exists' not in forward_server.stdout"
+
+- name: Configure forwarder inputs
+  ansible.builtin.template:
+    src: outputs.conf.j2
+    dest: "{{ splunk_install_dir }}/etc/system/local/outputs.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart Splunk
+
+- name: Restart Splunk forwarder
+  ansible.builtin.systemd:
+    name: splunkforwarder
+    state: restarted
+  when: forward_server is changed

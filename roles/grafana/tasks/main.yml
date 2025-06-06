@@ -1,0 +1,44 @@
+---
+- name: Add Grafana GPG key
+  ansible.builtin.apt_key:
+    url: "{{ grafana_repo_key_url }}"
+    state: present
+
+- name: Add Grafana apt repo
+  ansible.builtin.apt_repository:
+    repo: "{{ grafana_repo }}"
+    state: present
+    filename: grafana
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Install Grafana
+  ansible.builtin.apt:
+    name: grafana={{ grafana_version }}
+    state: present
+
+- name: Enable and start Grafana service
+  ansible.builtin.service:
+    name: grafana-server
+    state: started
+    enabled: yes
+
+- name: Wait for Grafana API to become available
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 3000
+    timeout: 60
+
+- name: Configure Prometheus data source in Grafana
+  community.grafana.grafana_datasource:
+    name: "{{ prometheus_datasource_name }}"
+    type: prometheus
+    url: "{{ prometheus_url }}"
+    access: proxy
+    is_default: yes
+    login_user: "{{ grafana_admin_user }}"
+    login_password: "{{ grafana_admin_password }}"
+    state: present
+  become: yes

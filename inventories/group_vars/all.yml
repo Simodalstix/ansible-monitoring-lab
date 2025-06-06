@@ -1,0 +1,7 @@
+# Common variables for all hosts
+ntp_servers:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+
+# credentials (Vault later if I'm feeling elite)
+ansible_become_password: superSecureSudoPass

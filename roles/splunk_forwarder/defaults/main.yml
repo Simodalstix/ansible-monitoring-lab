@@ -1,0 +1,10 @@
+---
+splunk_forwarder_version: "{{ hostvars['splunkagent.lab.local']['splunk_forwarder_version'] | default('9.1.7') }}"
+splunk_download_url: "{{ hostvars['splunkagent.lab.local']['splunk_download_url'] }}"
+splunk_install_dir: /opt/splunkforwarder
+splunk_admin_user: admin
+splunk_admin_password: changeme
+splunk_server: "splunkserver.lab.local"
+splunk_server_port: 9997
+forwarder_inputs:
+  - { stanzas: "[monitor:///var/log]", index: "main", sourcetype: "syslog" }

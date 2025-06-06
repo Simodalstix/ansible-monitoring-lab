@@ -1,0 +1,64 @@
+- name: "Update all packages (Ubuntu: apt / RHEL: yum/dnf)"
+  ansible.builtin.package:
+    name: "*"
+    state: latest
+  when: ansible_facts.os_family in ['Debian', 'RedHat']
+
+- name: Install common packages
+  ansible.builtin.package:
+    name: "{{ common_packages }}"
+    state: present
+
+- name: Ensure SSHD config disables root login & password auth
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: "0600"
+  notify: Restart sshd
+
+- name: Open firewall ports via firewalld (RHEL) or ufw (Ubuntu)
+  block:
+    - name: RHEL | Ensure firewalld is installed and running
+      ansible.builtin.yum:
+        name: firewalld
+        state: present
+      when: ansible_facts.os_family == "RedHat"
+
+    - name: RHEL | Start and enable firewalld
+      ansible.builtin.service:
+        name: firewalld
+        state: started
+        enabled: yes
+      when: ansible_facts.os_family == "RedHat"
+
+    - name: RHEL | Add allowed ports to firewalld
+      ansible.posix.firewalld:
+        service: false
+        port: "{{ item.port }}/{{ item.proto }}"
+        permanent: yes
+        immediate: yes
+        state: "{{ item.rule }}"
+      loop: "{{ firewall_allowed_ports }}"
+      when: ansible_facts.os_family == "RedHat"
+
+    - name: Ubuntu | Ensure ufw is installed
+      ansible.builtin.apt:
+        name: ufw
+        state: present
+        update_cache: yes
+      when: ansible_facts.os_family == "Debian"
+
+    - name: Ubuntu | Allow ports in ufw
+      community.general.ufw:
+        rule: allow
+        port: "{{ item.port }}"
+        proto: "{{ item.proto }}"
+      loop: "{{ firewall_allowed_ports }}"
+      when: ansible_facts.os_family == "Debian"
+
+    - name: Ubuntu | Enable ufw
+      ansible.builtin.command:
+        cmd: ufw --force enable
+      when: ansible_facts.os_family == "Debian"

@@ -1,0 +1,31 @@
+---
+- name: Push firewall rule to pfSense via REST API
+  ansible.builtin.uri:
+    url: "https://{{ pfsense_hostname }}/api/v1/firewall/rule"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ pfsense_api_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      rule:
+        action: "{{ item.action }}"
+        interface: "{{ item.interface }}"
+        ipprotocol: "{{ item.ipprotocol }}"
+        protocol: "{{ item.protocol }}"
+        source: "{{ item.source }}"
+        destination: "{{ item.destination }}"
+        descr: "{{ item.descr }}"
+    validate_certs: no
+  loop: "{{ firewall_rules }}"
+  when: firewall_rules is defined
+  register: pfsense_rules
+
+- name: Rebuild pfSense firewall configuration (if needed)
+  ansible.builtin.uri:
+    url: "https://{{ pfsense_hostname }}/api/v1/firewall/reconfigure"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ pfsense_api_token }}"
+    validate_certs: no
+  when: pfsense_rules is changed

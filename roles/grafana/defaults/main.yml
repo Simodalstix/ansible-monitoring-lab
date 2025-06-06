@@ -1,0 +1,7 @@
+grafana_version: "10.0.7"
+grafana_repo_key_url: "{{ hostvars['prometheus.lab.local']['grafana_signing_key_url'] }}"
+grafana_repo: "deb https://packages.grafana.com/oss/deb stable main"
+grafana_admin_user: "admin"
+grafana_admin_password: "admin"
+prometheus_datasource_name: "Prometheus"
+prometheus_url: "http://localhost:9090"

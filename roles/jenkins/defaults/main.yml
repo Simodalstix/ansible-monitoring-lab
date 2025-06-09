@@ -1,3 +1,0 @@
-jenkins_repo_key_url: "{{ hostvars['jenkins.lab.local']['jenkins_repo_key_url'] }}"
-jenkins_repo: "{{ hostvars['jenkins.lab.local']['jenkins_repo'] }}"
-java_package: openjdk-11-jdk

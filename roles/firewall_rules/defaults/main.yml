@@ -1,4 +1,0 @@
----
-pfsense_api_token: "{{ hostvars['pfsense.lab.local']['pfsense_api_token'] }}"
-pfsense_api_user: "admin"
-pfsense_hostname: "192.168.56.1"

@@ -1,18 +1,16 @@
----
-- name: Download Splunk Universal Forwarder RPM
+- name: Download Splunk Universal Forwarder .deb
   ansible.builtin.get_url:
     url: "{{ splunk_download_url }}"
-    dest: "/tmp/splunkforwarder-{{ splunk_forwarder_version }}.rpm"
-    mode: "0644"
+    dest: "/tmp/splunkforwarder-{{ splunk_forwarder_version }}.deb"
 
-- name: Install Splunk Forwarder RPM
-  ansible.builtin.yum:
-    name: "/tmp/splunkforwarder-{{ splunk_forwarder_version }}.rpm"
+- name: Install Splunk Forwarder DEB
+  ansible.builtin.apt:
+    deb: "/tmp/splunkforwarder-{{ splunk_forwarder_version }}.deb"
     state: present
 
-- name: Ensure Splunk service is enabled
+- name: Enable Splunk boot-start (creates systemd unit)
   ansible.builtin.command:
-    cmd: "{{ splunk_install_dir }}/bin/splunk enable boot-start -user splunk"
+    cmd: "{{ splunk_install_dir }}/bin/splunk enable boot-start --accept-license --answer-yes -user splunk"
   args:
     creates: /etc/systemd/system/splunkforwarder.service
 
@@ -24,26 +22,36 @@
 
 - name: Configure Splunk Admin credentials
   ansible.builtin.command:
-    cmd: "{{ splunk_install_dir }}/bin/splunk edit user {{ splunk_admin_user }} -password '{{ splunk_admin_password }}' -role admin -auth admin:changeme"
-  args:
-    creates: "{{ splunk_install_dir }}/etc/passwd"
+    cmd: >-
+      {{ splunk_install_dir }}/bin/splunk edit user {{ splunk_admin_user }}
+      -password '{{ splunk_admin_password }}'
+      -role admin
+      -auth admin:changeme
+  register: pwd_change
+  changed_when: "'changed' in pwd_change.stdout"
 
 - name: Configure Splunk to forward to central indexer
   ansible.builtin.command:
-    cmd: "{{ splunk_install_dir }}/bin/splunk add forward-server {{ splunk_server }}:{{ splunk_server_port }} -auth {{ splunk_admin_user }}:{{ splunk_admin_password }}"
+    cmd: >-
+      {{ splunk_install_dir }}/bin/splunk add forward-server
+      {{ splunk_server }}:{{ splunk_server_port }}
+      -auth {{ splunk_admin_user }}:{{ splunk_admin_password }}
   register: forward_server
   changed_when: "'already exists' not in forward_server.stdout"
 
-- name: Configure forwarder inputs
+- name: Configure forwarder outputs
   ansible.builtin.template:
     src: outputs.conf.j2
     dest: "{{ splunk_install_dir }}/etc/system/local/outputs.conf"
-    owner: root
-    group: root
-    mode: "0644"
   notify: Restart Splunk
 
-- name: Restart Splunk forwarder
+- name: Configure forwarder inputs
+  ansible.builtin.template:
+    src: inputs.conf.j2
+    dest: "{{ splunk_install_dir }}/etc/system/local/inputs.conf"
+  notify: Restart Splunk
+
+- name: Restart Splunk forwarder if forward-server changed
   ansible.builtin.systemd:
     name: splunkforwarder
     state: restarted

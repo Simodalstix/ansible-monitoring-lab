@@ -4,4 +4,4 @@ ntp_servers:
   - 1.pool.ntp.org
 
 # credentials (Vault later if I'm feeling elite)
-ansible_become_password: superSecureSudoPass
+ansible_become_password: polar

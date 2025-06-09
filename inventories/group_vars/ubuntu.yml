@@ -5,5 +5,8 @@ node_exporter_version: "1.6.1"
 grafana_repo_url: "https://packages.grafana.com/oss/deb"
 grafana_signing_key_url: "https://packages.grafana.com/gpg.key"
 
-jenkins_repo_key_url: "https://pkg.jenkins.io/debian/jenkins.io.key"
-jenkins_repo: "deb https://pkg.jenkins.io/debian-stable binary/"
+# inventories/group_vars/ubuntu.yml
+
+# Splunk Universal Forwarder (latest)
+splunk_forwarder_version: "9.4.3"
+splunk_download_url: "https://download.splunk.com/products/universalforwarder/releases/9.4.3/linux/splunkforwarder-9.4.3-Linux-x86_64.deb"

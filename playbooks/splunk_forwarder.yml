@@ -1,0 +1,7 @@
+---
+- name: Deploy Splunk Universal Forwarder on Splunk hosts
+  hosts: ubuntu
+  become: yes
+
+  roles:
+    - role: splunk_forwarder

@@ -1,36 +1,31 @@
 ---
-- name: “Apply Linux baseline to all Linux hosts”
-  hosts: ubuntu:rhel:adserver
+# playbooks/site.yml
+# This is your main playbook to apply all roles across your infrastructure.
+
+- name: "Apply Linux baseline to all Linux hosts"
+  hosts: ubuntu, rhel_indexers, rhel_forwarders # Target your Linux groups correctly
   become: yes
   roles:
     - linux_baseline
 
-- name: “Configure Prometheus on its host”
-  hosts: prometheus.lab.local
-  become: yes
-  roles:
-    - prometheus
-
-- name: “Configure Grafana on its host”
-  hosts: prometheus.lab.local
-  become: yes
-  roles:
-    - grafana
-
-- name: “Configure Jenkins on its host”
-  hosts: jenkins.lab.local
-  become: yes
-  roles:
-    - jenkins
-
-- name: “Configure Splunk Universal Forwarder on RHEL”
-  hosts: splunkagent.lab.local
+- name: "Configure Splunk Universal Forwarder on all Linux hosts that need it"
+  # Target all hosts in the 'ubuntu' group, and any hosts you might add to 'rhel_forwarders'.
+  # DO NOT include 'rhel_indexers' here, as that's your central Splunk server, not a forwarder.
+  hosts: ubuntu, rhel_forwarders
   become: yes
   roles:
     - splunk_forwarder
 
-- name: “Push firewall rules to pfSense”
-  hosts: pfsense.lab.local
-  gather_facts: no
+# --- Prometheus and Grafana (to be developed later) ---
+
+- name: "Configure Prometheus on its host"
+  hosts: prometheus.lab.local # Targets the specific Prometheus host
+  become: yes
   roles:
-    - firewall_rules
+    - prometheus
+
+- name: "Configure Grafana on its host"
+  hosts: grafana.lab.local # Corrected: Targets the specific Grafana host
+  become: yes
+  roles:
+    - grafana

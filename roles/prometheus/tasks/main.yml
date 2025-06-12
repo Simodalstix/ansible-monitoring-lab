@@ -1,122 +1,136 @@
+# roles/prometheus/tasks/main.yml
 ---
-- name: Create prometheus user
+- name: Determine if current host is the Prometheus server
+  ansible.builtin.set_fact:
+    is_prometheus_server: "{{ 'prometheus.simo.local' in inventory_hostname }}"
+
+- name: Create Prometheus group
+  ansible.builtin.group:
+    name: "{{ prometheus_group }}"
+    system: yes
+  when: is_prometheus_server
+
+- name: Create Prometheus user
   ansible.builtin.user:
     name: "{{ prometheus_user }}"
-    shell: /sbin/nologin
+    group: "{{ prometheus_group }}"
     system: yes
+    shell: /sbin/nologin
+  when: is_prometheus_server
 
-- name: Download Prometheus tarball
-  ansible.builtin.get_url:
-    url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
-    dest: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
-    mode: "0644"
-  register: prometheus_download
+- name: Create Prometheus installation directory
+  ansible.builtin.file:
+    path: "{{ prometheus_install_dir }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: "0755"
+  when: is_prometheus_server
 
-- name: Extract Prometheus
+- name: Create Prometheus data directory
+  ansible.builtin.file:
+    path: "{{ prometheus_data_path }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: "0755"
+  when: is_prometheus_server
+
+- name: Download and unarchive Prometheus
   ansible.builtin.unarchive:
-    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
-    dest: "{{ prometheus_install_dir }}"
+    src: "{{ prometheus_base_url }}"
+    dest: "/tmp"
     remote_src: yes
-    creates: "{{ prometheus_install_dir }}/prometheus-{{ prometheus_version }}.linux-amd64"
+  when: is_prometheus_server
 
-- name: Copy Prometheus binaries to /usr/local/bin
+- name: Copy Prometheus binaries
   ansible.builtin.copy:
-    src: "{{ prometheus_install_dir }}/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
-    dest: "/usr/local/bin/{{ item }}"
-    owner: root
-    group: root
+    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
+    dest: "{{ prometheus_install_dir }}/{{ item }}"
+    remote_src: yes
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
     mode: "0755"
   loop:
     - prometheus
     - promtool
+  when: is_prometheus_server
 
-- name: Create Prometheus config directory
-  ansible.builtin.file:
-    path: /etc/prometheus
-    state: directory
-    owner: "{{ prometheus_user }}"
-    group: "{{ prometheus_user }}"
-    mode: "0755"
-
-- name: Template prometheus.yml
+- name: Create Prometheus configuration file
   ansible.builtin.template:
     src: prometheus.yml.j2
-    dest: /etc/prometheus/prometheus.yml
+    dest: "{{ prometheus_config_path }}"
     owner: "{{ prometheus_user }}"
-    group: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
     mode: "0644"
+  when: is_prometheus_server
   notify: Restart prometheus
 
-- name: Create systemd service for Prometheus
-  ansible.builtin.copy:
+- name: Create Prometheus systemd service file
+  ansible.builtin.template:
+    src: prometheus.service.j2
     dest: /etc/systemd/system/prometheus.service
-    content: |
-      [Unit]
-      Description=Prometheus Monitoring
-      Wants=network-online.target
-      After=network-online.target
-
-      [Service]
-      User={{ prometheus_user }}
-      ExecStart=/usr/local/bin/prometheus \
-        --config.file=/etc/prometheus/prometheus.yml \
-        --storage.tsdb.path=/var/lib/prometheus
-
-      [Install]
-      WantedBy=multi-user.target
     owner: root
     group: root
     mode: "0644"
-  notify: Reload systemd
+  when: is_prometheus_server
+  notify: Reload systemd && Restart prometheus
 
-- name: Download node_exporter tarball
-  ansible.builtin.get_url:
-    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
-    dest: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
-    mode: "0644"
+- name: Enable and start Prometheus service
+  ansible.builtin.systemd:
+    name: prometheus
+    state: started
+    enabled: yes
+  when: is_prometheus_server
 
-- name: Extract node_exporter
-  ansible.builtin.unarchive:
-    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
-    dest: "{{ node_exporter_install_dir }}"
-    remote_src: yes
-    creates: "{{ node_exporter_install_dir }}/node_exporter-{{ node_exporter_version }}.linux-amd64"
+# --- Node Exporter Tasks (for all Linux hosts in the group) ---
 
-- name: Copy node_exporter binary
-  ansible.builtin.copy:
-    src: "{{ node_exporter_install_dir }}/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
-    dest: /usr/local/bin/node_exporter
-    owner: root
-    group: root
+- name: Create node_exporter group
+  ansible.builtin.group:
+    name: "{{ node_exporter_group }}"
+    system: yes
+
+- name: Create node_exporter user
+  ansible.builtin.user:
+    name: "{{ node_exporter_user }}"
+    group: "{{ node_exporter_group }}"
+    system: yes
+    shell: /sbin/nologin
+
+- name: Create node_exporter installation directory
+  ansible.builtin.file:
+    path: "{{ node_exporter_install_dir }}"
+    state: directory
+    owner: "{{ node_exporter_user }}"
+    group: "{{ node_exporter_group }}"
     mode: "0755"
 
-- name: Create node_exporter systemd service
+- name: Download and unarchive Node Exporter
+  ansible.builtin.unarchive:
+    src: "{{ node_exporter_base_url }}"
+    dest: "/tmp"
+    remote_src: yes
+
+- name: Copy Node Exporter binary
   ansible.builtin.copy:
+    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
+    dest: "{{ node_exporter_install_dir }}/node_exporter"
+    remote_src: yes
+    owner: "{{ node_exporter_user }}"
+    group: "{{ node_exporter_group }}"
+    mode: "0755"
+
+- name: Create Node Exporter systemd service file
+  ansible.builtin.template:
+    src: node_exporter.service.j2
     dest: /etc/systemd/system/node_exporter.service
-    content: |
-      [Unit]
-      Description=Node Exporter
-      After=network.target
-
-      [Service]
-      User=root
-      ExecStart=/usr/local/bin/node_exporter
-
-      [Install]
-      WantedBy=default.target
     owner: root
     group: root
     mode: "0644"
-  notify: Reload systemd
+  notify: Reload systemd && Restart node_exporter
 
-- name: Ensure Prometheus is enabled and started
-  ansible.builtin.service:
-    name: prometheus
-    enabled: yes
-    state: started
-
-- name: Ensure node_exporter is enabled and started
-  ansible.builtin.service:
+- name: Enable and start Node Exporter service
+  ansible.builtin.systemd:
     name: node_exporter
-    enabled: yes
     state: started
+    enabled: yes

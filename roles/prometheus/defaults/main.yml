@@ -1,5 +1,34 @@
-prometheus_version: "{{ hostvars['prometheus.lab.local']['prometheus_version'] | default('2.46.0') }}"
-node_exporter_version: "{{ hostvars['prometheus.lab.local']['node_exporter_version'] | default('1.6.1') }}"
-prometheus_install_dir: /opt/prometheus
-node_exporter_install_dir: /opt/node_exporter
-prometheus_user: prometheus
+# roles/prometheus/defaults/main.yml
+---
+# Prometheus Server Defaults
+prometheus_version: "3.4.1" # Check Prometheus releases page for latest stable
+prometheus_base_url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+prometheus_install_dir: "/opt/prometheus"
+prometheus_user: "prometheus"
+prometheus_group: "prometheus"
+prometheus_port: 9090
+prometheus_config_path: "{{ prometheus_install_dir }}/prometheus.yml"
+prometheus_data_path: "{{ prometheus_install_dir }}/data"
+prometheus_scrape_interval: "15s"
+
+# Node Exporter Defaults (for agents)
+node_exporter_version: "1.8.0" # Check Node Exporter releases page for latest stable
+node_exporter_base_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+node_exporter_install_dir: "/opt/node_exporter"
+node_exporter_user: "node_exporter"
+node_exporter_group: "node_exporter"
+node_exporter_port: 9100
+
+# List of targets for Prometheus to scrape.
+# This list will be used to generate the prometheus.yml config.
+# Hostnames *must* be resolvable via DNS (e.g., simo.local domain).
+prometheus_targets:
+  - job_name: "prometheus"
+    targets:
+      - "localhost:{{ prometheus_port }}" # Prometheus server itself
+  - job_name: "linux_servers"
+    targets:
+      - "prometheus.simo.local:{{ node_exporter_port }}" # Your Prometheus VM host
+      - "grafana.simo.local:{{ node_exporter_port }}" # Your Grafana VM host
+      - "splunk.simo.local:{{ node_exporter_port }}" # Your Splunk Indexer VM host
+      # Add other Linux VMs here as you bring them up

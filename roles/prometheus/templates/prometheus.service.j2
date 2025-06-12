@@ -1,0 +1,23 @@
+# roles/prometheus/templates/prometheus.service.j2
+# Systemd service file for Prometheus
+
+[Unit]
+Description=Prometheus
+Documentation=https://prometheus.io/docs/
+After=network-online.target
+
+[Service]
+User={{ prometheus_user }}
+Group={{ prometheus_group }}
+Restart=on-failure
+ExecStart={{ prometheus_install_dir }}/prometheus \
+  --config.file={{ prometheus_config_path }} \
+  --storage.tsdb.path={{ prometheus_data_path }} \
+  --web.listen-address="0.0.0.0:{{ prometheus_port }}" \
+  --web.enable-remote-write-receiver \
+  --log.level=info
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,2 @@
+# inventories/group_vars/rhel.yml
+# No explicit content needed here if defaults/main.yml covers all RHEL forwarder needs.

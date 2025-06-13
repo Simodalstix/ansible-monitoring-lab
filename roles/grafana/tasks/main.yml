@@ -1,44 +1,67 @@
+# roles/grafana/tasks/main.yml
 ---
-- name: Add Grafana GPG key
-  ansible.builtin.apt_key:
-    url: "{{ grafana_repo_key_url }}"
-    state: present
-
-- name: Add Grafana apt repo
-  ansible.builtin.apt_repository:
-    repo: "{{ grafana_repo }}"
-    state: present
-    filename: grafana
-
-- name: Update apt cache
+- name: Install required packages for Grafana (Ubuntu)
   ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - software-properties-common
+      - wget
+      - curl
+    state: present
     update_cache: yes
+  when: ansible_os_family == "Debian"
 
-- name: Install Grafana
-  ansible.builtin.apt:
-    name: grafana={{ grafana_version }}
+- name: Add Grafana GPG key (Ubuntu)
+  ansible.builtin.apt_key:
+    url: https://apt.grafana.com/gpg.key
     state: present
+  when: ansible_os_family == "Debian"
 
-- name: Enable and start Grafana service
-  ansible.builtin.service:
+- name: Add Grafana APT repository (Ubuntu)
+  ansible.builtin.apt_repository:
+    repo: "deb https://apt.grafana.com stable main"
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install Grafana (Ubuntu)
+  ansible.builtin.apt:
+    name: grafana
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+  notify: Restart grafana-server
+
+- name: Install Grafana (RHEL - placeholder, adjust as needed for RHEL 8/9)
+  ansible.builtin.yum: # or dnf for newer RHEL
+    name: grafana
+    state: present
+  when: ansible_os_family == "RedHat" # This will run on RHEL, but will need specific repo setup for Grafana on RHEL
+  notify: Restart grafana-server
+
+- name: Ensure Grafana service is enabled and running
+  ansible.builtin.systemd:
     name: grafana-server
     state: started
     enabled: yes
 
-- name: Wait for Grafana API to become available
+- name: Wait for Grafana to start
   ansible.builtin.wait_for:
-    host: 127.0.0.1
-    port: 3000
+    port: "{{ grafana_port }}"
+    host: "{{ ansible_host }}" # Use ansible_host to check the correct IP
+    delay: 5
     timeout: 60
 
-- name: Configure Prometheus data source in Grafana
-  community.grafana.grafana_datasource:
-    name: "{{ prometheus_datasource_name }}"
-    type: prometheus
-    url: "{{ prometheus_url }}"
-    access: proxy
-    is_default: yes
-    login_user: "{{ grafana_admin_user }}"
-    login_password: "{{ grafana_admin_password }}"
-    state: present
-  become: yes
+- name: Add Prometheus as a data source to Grafana
+  ansible.builtin.uri:
+    url: "http://localhost:{{ grafana_port }}/api/datasources"
+    user: "{{ grafana_admin_user }}"
+    password: "{{ grafana_admin_password }}"
+    method: POST
+    body_format: json
+    body: "{{ lookup('file', '{{ role_path }}/templates/datasource.json.j2') }}"
+    status_code: [200]
+    force_basic_auth: yes
+    headers:
+      Content-Type: "application/json"
+    validate_certs: no # Adjust for production
+  when: prometheus_server_url is defined and prometheus_server_url != ""

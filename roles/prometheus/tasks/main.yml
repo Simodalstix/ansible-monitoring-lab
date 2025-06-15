@@ -7,14 +7,14 @@
 - name: Create Prometheus group
   ansible.builtin.group:
     name: "{{ prometheus_group }}"
-    system: yes
+    system: true
   when: is_prometheus_server
 
 - name: Create Prometheus user
   ansible.builtin.user:
     name: "{{ prometheus_user }}"
     group: "{{ prometheus_group }}"
-    system: yes
+    system: true
     shell: /sbin/nologin
   when: is_prometheus_server
 
@@ -40,14 +40,14 @@
   ansible.builtin.unarchive:
     src: "{{ prometheus_base_url }}"
     dest: "/tmp"
-    remote_src: yes
+    remote_src: true
   when: is_prometheus_server
 
 - name: Copy Prometheus binaries
   ansible.builtin.copy:
     src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
     dest: "{{ prometheus_install_dir }}/{{ item }}"
-    remote_src: yes
+    remote_src: true
     owner: "{{ prometheus_user }}"
     group: "{{ prometheus_group }}"
     mode: "0755"
@@ -80,7 +80,7 @@
   ansible.builtin.systemd:
     name: prometheus
     state: started
-    enabled: yes
+    enabled: true
   when: is_prometheus_server
 
 # --- Node Exporter Tasks (for all Linux hosts in the group) ---
@@ -88,13 +88,13 @@
 - name: Create node_exporter group
   ansible.builtin.group:
     name: "{{ node_exporter_group }}"
-    system: yes
+    system: true
 
 - name: Create node_exporter user
   ansible.builtin.user:
     name: "{{ node_exporter_user }}"
     group: "{{ node_exporter_group }}"
-    system: yes
+    system: true
     shell: /sbin/nologin
 
 - name: Create node_exporter installation directory
@@ -109,13 +109,13 @@
   ansible.builtin.unarchive:
     src: "{{ node_exporter_base_url }}"
     dest: "/tmp"
-    remote_src: yes
+    remote_src: true
 
 - name: Copy Node Exporter binary
   ansible.builtin.copy:
     src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
     dest: "{{ node_exporter_install_dir }}/node_exporter"
-    remote_src: yes
+    remote_src: true
     owner: "{{ node_exporter_user }}"
     group: "{{ node_exporter_group }}"
     mode: "0755"
@@ -133,4 +133,4 @@
   ansible.builtin.systemd:
     name: node_exporter
     state: started
-    enabled: yes
+    enabled: true

@@ -2,7 +2,7 @@
 ---
 # Prometheus Server Defaults
 prometheus_version: "3.4.1" # Check Prometheus releases page for latest stable
-prometheus_base_url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+prometheus_base_url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz" # noqa yaml[line-length]
 prometheus_install_dir: "/opt/prometheus"
 prometheus_user: "prometheus"
 prometheus_group: "prometheus"
@@ -12,12 +12,12 @@ prometheus_data_path: "{{ prometheus_install_dir }}/data"
 prometheus_scrape_interval: "15s"
 
 # Node Exporter Defaults (for agents)
-node_exporter_version: "1.8.0" # Check Node Exporter releases page for latest stable
-node_exporter_base_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
-node_exporter_install_dir: "/opt/node_exporter"
-node_exporter_user: "node_exporter"
-node_exporter_group: "node_exporter"
-node_exporter_port: 9100
+prometheus_node_exporter_version: "1.8.0" # Check Node Exporter releases page for latest stable
+prometheus_node_exporter_base_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz" # noqa yaml[line-length]
+prometheus_node_exporter_install_dir: "/opt/node_exporter"
+prometheus_node_exporter_user: "node_exporter"
+prometheus_vnode_exporter_group: "node_exporter"
+prometheus_node_exporter_port: 9100
 
 # List of targets for Prometheus to scrape.
 # This list will be used to generate the prometheus.yml config.

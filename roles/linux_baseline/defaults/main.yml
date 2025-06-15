@@ -1,14 +1,14 @@
 # Default packages to install on all Linux nodes
-common_packages:
+linux_baseline_common_packages:
   - vim
   - git
   - curl
   - wget
   - unzip
   - epel-release # for RHEL
-sshd_permit_root_login: "no"
-sshd_password_authentication: "no"
-firewall_allowed_ports:
+linux_baseline_sshd_permit_root_login: "no"
+linux_baseline_sshd_password_authentication: "no"
+linux_baseline_firewall_allowed_ports:
   - { port: 22, proto: tcp, rule: allow }
   - { port: 80, proto: tcp, rule: allow } # Will add webserver later if I'm feeling elite
   - { port: 443, proto: tcp, rule: allow }

@@ -4,7 +4,7 @@
 
 - name: "Apply Linux baseline to all Linux hosts"
   hosts: ubuntu, rhel_indexers, rhel_forwarders # Target your Linux groups correctly
-  become: yes
+  become: true
   roles:
     - linux_baseline
 
@@ -12,7 +12,7 @@
   # Target all hosts in the 'ubuntu' group, and any hosts you might add to 'rhel_forwarders'.
   # DO NOT include 'rhel_indexers' here, as that's your central Splunk server, not a forwarder.
   hosts: ubuntu, rhel_forwarders
-  become: yes
+  become: true
   roles:
     - splunk_forwarder
 
@@ -20,12 +20,12 @@
 
 - name: "Configure Prometheus on its host"
   hosts: prometheus.lab.local # Targets the specific Prometheus host
-  become: yes
+  become: true
   roles:
     - prometheus
 
 - name: "Configure Grafana on its host"
   hosts: grafana.lab.local # Corrected: Targets the specific Grafana host
-  become: yes
+  become: true
   roles:
     - grafana

@@ -2,6 +2,6 @@
 ---
 - name: Deploy Prometheus Server and Node Exporters
   hosts: ubuntu, rhel_indexers, rhel_forwarders # Apply to all Linux hosts that need monitoring
-  become: yes
+  become: true
   roles:
     - prometheus

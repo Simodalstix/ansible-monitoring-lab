@@ -1,0 +1,5 @@
+# roles/linux_baseline/meta/main.yml
+---
+dependencies: []
+collections:
+  - ansible.posix

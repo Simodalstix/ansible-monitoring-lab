@@ -1,3 +1,4 @@
+---
 # Ubuntu‐specific vars
 prometheus_version: "2.46.0"
 node_exporter_version: "1.6.1"
@@ -5,14 +6,11 @@ node_exporter_version: "1.6.1"
 grafana_repo_url: "https://packages.grafana.com/oss/deb"
 grafana_signing_key_url: "https://packages.grafana.com/gpg.key"
 
----
-# inventories/group_vars/ubuntu.yml
----
 # CRITICAL: This is the placeholder for the actual .deb download URL.
 # You MUST replace this with the link you copy from your browser after
 # initiating a download from the official Splunk site (logged in).
 # Remember these links have a TTL, so for prod, self-host the package.
-splunk_download_url: "https://download.splunk.com/products/universalforwarder/releases/9.4.3/linux/splunkforwarder-9.4.3-237ebbd22314-linux-amd64.deb?_gl=1*ye09rv*_gcl_au*MzYwOTU0NDY0LjE3NDkwMzcwMzcuMTM5NjQ3Mzc3My4xNzQ5NjA0MDM2LjE3NDk2MDQwMzU.*FPAU*MzYwOTU0NDY0LjE3NDkwMzcwMzc.*_ga*MTI5MjU1ODk3MS4xNzQ5MDM3MDM2*_ga_5EPM2P39FV*czE3NDk2MDY5MTMkbzMkZzEkdDE3NDk2MDY5ODYkajYwJGwwJGgxNDcyMjQwMjM4*_fplc*VnI3QjFjak9lcHQxV3clMkYlMkJ4dExtdDhKclNDVjY3ciUyQjVqS3BBMnk3VVltTm9tUFRuQTlWVSUyRkJJMnl0WUt4bVhoeld6N3hFdHJLUG1TbkEyWWh2UTdEeGFUNzVxak9IVjVBNXUxSUVFQ3cyVmZ6UjJWOWJNU25Xb3o1eEplaVElM0QlM0Q."
+splunk_download_url: "https://download.splunk.com/products/universalforwarder/releases/9.4.3/linux/splunkforwarder-9.4.3-237ebbd22314-linux-amd64.deb?_gl=1*ye09rv*_gcl_au*MzYwOTU0NDY0LjE3NDkwMzcwMzcuMTM5NjQ3Mzc3My4xNzQ5NjA0MDM2LjE3NDk2MDQwMzU.*FPAU*MzYwOTU0NDY0LjE3NDkwMzcwMzc.*_ga*MTI5MjU1ODk3MS4xNzQ5MDM3MDM2*_ga_5EPM2P39FV*czE3NDk2MDY5MTMkbzMkZzEkdDE3NDk2MDY5ODYkajYwJGwwJGgxNDcyMjQwMjM4*_fplc*VnI3QjFjak9lcHQxV3clMkYlMkJ4dExtdDhKclNDVjY3ciUyQjVqS3BBMnk3VVltTm9tUFRuQTlWVSUyRkJJMnl0WUt4bVhoeld6N3hFdHJLUG1TbkEyWWh2UTdEeGFUNzVxak9IVjVBNXUxSUVFQ3cyVmZ6UjJWOWJNU25Xb3o1eEplaVElM0QlM0Q." # noqa yaml[line-length]
 
 # Ubuntu-specific installation directory if different from default
 # splunk_install_dir: "/opt/splunkforwarder_ubuntu" # Uncomment and change if needed

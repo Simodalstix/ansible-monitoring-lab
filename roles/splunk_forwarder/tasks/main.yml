@@ -4,7 +4,7 @@
   ansible.builtin.user:
     name: splunk
     shell: /sbin/nologin
-    system: yes
+    system: true
 
 - name: Download Splunk Universal Forwarder Package
   ansible.builtin.get_url:
@@ -22,14 +22,14 @@
   ansible.builtin.apt:
     deb: "/tmp/splunkforwarder-{{ splunk_forwarder_version }}.deb"
     state: present
-    update_cache: yes
+    update_cache: true
   when: ansible_os_family == 'Debian'
 
 - name: Enable Splunk boot-start (creates systemd unit)
   ansible.builtin.command:
     cmd: >-
       {{ splunk_install_dir }}/bin/splunk enable boot-start
-      --accept-license --answer-yes -user splunk
+      --accept-license --answer-true -user splunk
     args:
       creates: /etc/systemd/system/splunkforwarder.service
 
@@ -37,7 +37,7 @@
   ansible.builtin.systemd:
     name: splunkforwarder
     state: started
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: Configure Splunk Admin credentials
   ansible.builtin.command:
@@ -57,6 +57,7 @@
       -auth {{ splunk_admin_user }}:{{ splunk_admin_password }}
   register: forward_server
   changed_when: "'already exists' not in forward_server.stdout"
+  notify: Restart Splunk
 
 - name: Configure forwarder outputs
   ansible.builtin.template:

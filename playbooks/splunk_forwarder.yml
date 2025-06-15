@@ -2,6 +2,6 @@
 ---
 - name: Deploy Splunk Universal Forwarders to Linux hosts
   hosts: ubuntu, rhel_forwarders # Target both groups
-  become: yes # Needed for package installation, service management etc.
+  become: true
   roles:
     - splunk_forwarder

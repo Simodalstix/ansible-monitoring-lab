@@ -2,6 +2,6 @@
 ---
 - name: Deploy Grafana
   hosts: grafana.simo.local # Target your Grafana VM
-  become: yes
+  become: true
   roles:
     - grafana

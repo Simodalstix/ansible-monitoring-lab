@@ -2,18 +2,15 @@
 # Prometheus configuration file
 
 global:
-  scrape_interval:     {{ prometheus_scrape_interval }} # Set the scrape interval to every 15 seconds. Default is 1m.
-  evaluation_interval: 15s # Evaluate rules every 15 seconds. Default is 1m.
-  # scrape_timeout is set to the global default (10s).
+  scrape_interval: {{ prometheus_scrape_interval }}
+  evaluation_interval: 15s
 
-# A scrape configuration containing exactly one endpoint to scrape.
-# Here it's Prometheus itself.
 scrape_configs:
-  {% for job in prometheus_targets %}
-  - job_name: '{{ job.job_name }}'
+{% for job in prometheus_targets %}
+  - job_name: {{ job.job_name }}
     static_configs:
       - targets:
-        {% for target in job.targets %}
-        - '{{ target }}'
-        {% endfor %}
-  {% endfor %}
+{% for target in job.targets %}
+          - {{ target }}
+{% endfor %}
+{% endfor %}

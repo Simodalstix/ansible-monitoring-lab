@@ -8,7 +8,7 @@
       - wget
       - curl
     state: present
-    update_cache: yes
+    update_cache: true
   when: ansible_os_family == "Debian"
 
 - name: Add Grafana GPG key (Ubuntu)
@@ -27,12 +27,12 @@
   ansible.builtin.apt:
     name: grafana
     state: present
-    update_cache: yes
+    update_cache: true
   when: ansible_os_family == "Debian"
   notify: Restart grafana-server
 
 - name: Install Grafana (RHEL - placeholder, adjust as needed for RHEL 8/9)
-  ansible.builtin.yum: # or dnf for newer RHEL
+  ansible.builtin.dnf: # or dnf for newer RHEL
     name: grafana
     state: present
   when: ansible_os_family == "RedHat" # This will run on RHEL, but will need specific repo setup for Grafana on RHEL
@@ -42,7 +42,7 @@
   ansible.builtin.systemd:
     name: grafana-server
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Wait for Grafana to start
   ansible.builtin.wait_for:
@@ -60,8 +60,8 @@
     body_format: json
     body: "{{ lookup('file', '{{ role_path }}/templates/datasource.json.j2') }}"
     status_code: [200]
-    force_basic_auth: yes
+    force_basic_auth: true
     headers:
       Content-Type: "application/json"
-    validate_certs: no # Adjust for production
+    validate_certs: false # Adjust for production
   when: prometheus_server_url is defined and prometheus_server_url != ""

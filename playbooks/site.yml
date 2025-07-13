@@ -19,13 +19,13 @@
 # --- Prometheus and Grafana (to be developed later) ---
 
 - name: "Configure Prometheus on its host"
-  hosts: prometheus.lab.local # Targets the specific Prometheus host
+  hosts: prometheus.simo.local # Targets the specific Prometheus host
   become: true
   roles:
     - prometheus
 
 - name: "Configure Grafana on its host"
-  hosts: grafana.lab.local # Corrected: Targets the specific Grafana host
+  hosts: grafana.simo.local # Corrected: Targets the specific Grafana host
   become: true
   roles:
     - grafana

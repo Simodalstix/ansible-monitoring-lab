@@ -1,8 +1,6 @@
-# roles/grafana/templates/datasource.json.j2
-{
-  "name": "Prometheus",
-  "type": "prometheus",
-  "url": "{{ prometheus_server_url }}",
-  "access": "proxy",
-  "isDefault": true
-}
+# roles/grafana/templates/datasource.yml.j2
+name: "Prometheus"
+type: "prometheus"
+url: "{{ grafana_prometheus_server_url }}"
+access: "proxy"
+isDefault: true

@@ -2,8 +2,8 @@
 defaultGroup = default-autolb-group
 
 [tcpout:default-autolb-group]
-server = {{ splunk_server }}:{{ splunk_server_port }}
+server = {{ splunk_forwarder_splunk_server }}:{{ splunk_forwarder_splunk_server_port }}
 
 # This stanza is often not strictly necessary if defaultGroup points to it,
 # but can be useful for explicit server configuration if needed.
-# [tcpout-server://{{ splunk_server }}:{{ splunk_server_port }}]
+# [tcpout-server://{{ splunk_forwarder_splunk_server }}:{{ splunk_forwarder_splunk_server_port }}]

@@ -11,9 +11,16 @@
     update_cache: true
   when: ansible_os_family == "Debian"
 
+- name: Download Grafana GPG key (Ubuntu)
+  ansible.builtin.get_url:
+    url: https://apt.grafana.com/gpg.key
+    dest: /tmp/grafana-gpg.key
+    mode: '0644'
+  when: ansible_os_family == "Debian"
+
 - name: Add Grafana GPG key (Ubuntu)
   ansible.builtin.apt_key:
-    url: https://apt.grafana.com/gpg.key
+    file: /tmp/grafana-gpg.key
     state: present
   when: ansible_os_family == "Debian"
 
@@ -58,10 +65,10 @@
     password: "{{ grafana_admin_password }}"
     method: POST
     body_format: json
-    body: "{{ lookup('file', '{{ role_path }}/templates/datasource.json.j2') }}"
+    body: "{{ lookup('template', 'datasource.yml.j2') | from_yaml | to_json }}"
     status_code: [200]
     force_basic_auth: true
     headers:
       Content-Type: "application/json"
     validate_certs: false # Adjust for production
-  when: prometheus_server_url is defined and prometheus_server_url != ""
+  when: grafana_prometheus_server_url is defined and grafana_prometheus_server_url != ""

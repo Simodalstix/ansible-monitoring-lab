@@ -87,37 +87,37 @@
 
 - name: Create node_exporter group
   ansible.builtin.group:
-    name: "{{ node_exporter_group }}"
+    name: "{{ prometheus_node_exporter_group }}"
     system: true
 
 - name: Create node_exporter user
   ansible.builtin.user:
-    name: "{{ node_exporter_user }}"
-    group: "{{ node_exporter_group }}"
+    name: "{{ prometheus_node_exporter_user }}"
+    group: "{{ prometheus_node_exporter_group }}"
     system: true
     shell: /sbin/nologin
 
 - name: Create node_exporter installation directory
   ansible.builtin.file:
-    path: "{{ node_exporter_install_dir }}"
+    path: "{{ prometheus_node_exporter_install_dir }}"
     state: directory
-    owner: "{{ node_exporter_user }}"
-    group: "{{ node_exporter_group }}"
+    owner: "{{ prometheus_node_exporter_user }}"
+    group: "{{ prometheus_node_exporter_group }}"
     mode: "0755"
 
 - name: Download and unarchive Node Exporter
   ansible.builtin.unarchive:
-    src: "{{ node_exporter_base_url }}"
+    src: "{{ prometheus_node_exporter_base_url }}"
     dest: "/tmp"
     remote_src: true
 
 - name: Copy Node Exporter binary
   ansible.builtin.copy:
-    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
-    dest: "{{ node_exporter_install_dir }}/node_exporter"
+    src: "/tmp/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64/node_exporter"
+    dest: "{{ prometheus_node_exporter_install_dir }}/node_exporter"
     remote_src: true
-    owner: "{{ node_exporter_user }}"
-    group: "{{ node_exporter_group }}"
+    owner: "{{ prometheus_node_exporter_user }}"
+    group: "{{ prometheus_node_exporter_group }}"
     mode: "0755"
 
 - name: Create Node Exporter systemd service file

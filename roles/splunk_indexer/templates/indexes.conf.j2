@@ -1,0 +1,53 @@
+# {{ ansible_managed }}
+# Splunk Indexer indexes.conf
+# This file defines custom indexes for organizing data
+
+{% for index in splunk_indexer_indexes %}
+[{{ index.name }}]
+homePath = {{ index.homePath }}
+coldPath = {{ index.coldPath }}
+thawedPath = {{ index.thawedPath }}
+maxDataSize = {{ index.maxDataSize }}
+maxHotBuckets = {{ index.maxHotBuckets }}
+maxWarmDBCount = {{ index.maxWarmDBCount }}
+{% if index.maxTotalDataSizeMB is defined %}
+maxTotalDataSizeMB = {{ index.maxTotalDataSizeMB }}
+{% endif %}
+{% if index.maxGlobalDataSizeMB is defined %}
+maxGlobalDataSizeMB = {{ index.maxGlobalDataSizeMB }}
+{% endif %}
+
+{% endfor %}
+
+# Volume definitions for better disk management
+[volume:primary]
+path = /opt/splunk/var/lib/splunk
+maxVolumeDataSizeMB = 500000
+
+[volume:secondary]
+path = /opt/splunk/var/lib/splunk
+maxVolumeDataSizeMB = 500000
+
+# Default index settings
+[default]
+# Retention settings
+maxDataSize = auto_high_volume
+maxHotBuckets = 10
+maxWarmDBCount = 300
+
+# Compression
+compressRawdata = true
+
+# Bloom filters
+enableTsidxReduction = true
+tsidxReductionCheckPeriodInSec = 3600
+
+# Performance tuning
+maxMemMB = 20
+maxConcurrentOptimizes = 6
+maxHotIdleSecs = 86400
+maxHotSpanSecs = 7776000
+
+# Bucket settings
+quarantinePastSecs = 77760000
+quarantineFutureSecs = 2592000

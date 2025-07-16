@@ -8,6 +8,12 @@
   roles:
     - linux_baseline
 
+- name: "Configure Splunk Enterprise Indexer on RHEL indexer hosts"
+  hosts: rhel_indexers
+  become: true
+  roles:
+    - splunk_indexer
+
 - name: "Configure Splunk Universal Forwarder on all Linux hosts that need it"
   # Target all hosts in the 'ubuntu' group, and any hosts you might add to 'rhel_forwarders'.
   # DO NOT include 'rhel_indexers' here, as that's your central Splunk server, not a forwarder.

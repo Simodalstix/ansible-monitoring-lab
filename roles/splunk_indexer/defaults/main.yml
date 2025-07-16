@@ -1,0 +1,58 @@
+---
+# roles/splunk_indexer/defaults/main.yml
+# Default values for Splunk Enterprise Indexer deployment
+
+splunk_indexer_version: "9.4.0"
+
+# Download URL for Splunk Enterprise (you'll need to get the real URL from Splunk's website)
+# This is a placeholder - replace with actual download URL from splunk.com
+splunk_indexer_download_url: "https://download.splunk.com/products/splunk/releases/{{ splunk_indexer_version }}/linux/splunk-{{ splunk_indexer_version }}-Linux-x86_64.rpm"
+
+splunk_indexer_install_dir: "/opt/splunk"
+
+splunk_indexer_admin_user: "admin"
+# IMPORTANT: This should be encrypted with Ansible Vault in a real environment!
+splunk_indexer_admin_password: "lulu618" # <<< CHANGE THIS AND VAULT IT!
+
+# Network configuration
+splunk_indexer_web_port: 8000
+splunk_indexer_mgmt_port: 8089
+splunk_indexer_receiving_port: 9997
+
+# Splunk configuration
+splunk_indexer_server_name: "{{ ansible_hostname }}"
+splunk_indexer_license_master: "{{ ansible_fqdn }}"
+
+# Index configuration
+splunk_indexer_indexes:
+  - name: "os"
+    homePath: "$SPLUNK_DB/os/db"
+    coldPath: "$SPLUNK_DB/os/colddb"
+    thawedPath: "$SPLUNK_DB/os/thaweddb"
+    maxDataSize: "auto_high_volume"
+    maxHotBuckets: 10
+    maxWarmDBCount: 300
+  - name: "security"
+    homePath: "$SPLUNK_DB/security/db"
+    coldPath: "$SPLUNK_DB/security/colddb"
+    thawedPath: "$SPLUNK_DB/security/thaweddb"
+    maxDataSize: "auto_high_volume"
+    maxHotBuckets: 10
+    maxWarmDBCount: 300
+  - name: "application"
+    homePath: "$SPLUNK_DB/application/db"
+    coldPath: "$SPLUNK_DB/application/colddb"
+    thawedPath: "$SPLUNK_DB/application/thaweddb"
+    maxDataSize: "auto_high_volume"
+    maxHotBuckets: 10
+    maxWarmDBCount: 300
+
+# Firewall ports to open
+splunk_indexer_firewall_ports:
+  - "{{ splunk_indexer_web_port }}/tcp"
+  - "{{ splunk_indexer_mgmt_port }}/tcp"
+  - "{{ splunk_indexer_receiving_port }}/tcp"
+
+# System requirements
+splunk_indexer_min_disk_space_gb: 20
+splunk_indexer_min_memory_mb: 4096

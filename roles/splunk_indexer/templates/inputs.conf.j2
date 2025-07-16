@@ -1,0 +1,45 @@
+# {{ ansible_managed }}
+# Splunk Indexer inputs.conf
+# This file configures data inputs for the Splunk Indexer
+
+# Enable receiving on port {{ splunk_indexer_receiving_port }}
+[splunktcp://{{ splunk_indexer_receiving_port }}]
+disabled = false
+connection_host = ip
+
+# Enable Splunk Web SSL (optional)
+[SSL]
+serverCert = $SPLUNK_HOME/etc/auth/server.pem
+sslPassword = password
+
+# Monitor local system logs on the indexer itself
+[monitor:///var/log/messages]
+disabled = false
+index = os
+sourcetype = linux_syslog
+
+[monitor:///var/log/secure]
+disabled = false
+index = security
+sourcetype = linux_secure
+
+[monitor:///var/log/audit/audit.log]
+disabled = false
+index = security
+sourcetype = linux_audit
+
+# Monitor Splunk's own logs
+[monitor://$SPLUNK_HOME/var/log/splunk/splunkd.log]
+disabled = false
+index = _internal
+sourcetype = splunkd
+
+[monitor://$SPLUNK_HOME/var/log/splunk/web_access.log]
+disabled = false
+index = _internal
+sourcetype = splunk_web_access
+
+# Enable metrics collection
+[splunk_metrics]
+disabled = false
+index = _metrics

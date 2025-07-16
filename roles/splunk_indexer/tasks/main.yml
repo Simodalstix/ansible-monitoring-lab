@@ -1,0 +1,171 @@
+# roles/splunk_indexer/tasks/main.yml
+---
+- name: Check system requirements - disk space
+  ansible.builtin.shell: df -BG /opt | awk 'NR==2 {print $4}' | sed 's/G//'
+  register: available_disk_space
+  changed_when: false
+
+- name: Check system requirements - memory
+  ansible.builtin.shell: free -m | awk 'NR==2{print $2}'
+  register: available_memory
+  changed_when: false
+
+- name: Fail if insufficient disk space
+  ansible.builtin.fail:
+    msg: "Insufficient disk space. Required: {{ splunk_indexer_min_disk_space_gb }}GB, Available: {{ available_disk_space.stdout }}GB"
+  when: available_disk_space.stdout | int < splunk_indexer_min_disk_space_gb
+
+- name: Fail if insufficient memory
+  ansible.builtin.fail:
+    msg: "Insufficient memory. Required: {{ splunk_indexer_min_memory_mb }}MB, Available: {{ available_memory.stdout }}MB"
+  when: available_memory.stdout | int < splunk_indexer_min_memory_mb
+
+- name: Ensure splunk user and group exist
+  ansible.builtin.user:
+    name: splunk
+    shell: /bin/bash
+    system: true
+    home: /home/splunk
+    create_home: true
+
+- name: Download Splunk Enterprise Package (if using URL)
+  ansible.builtin.get_url:
+    url: "{{ splunk_indexer_download_url }}"
+    dest: "/tmp/splunk-{{ splunk_indexer_version }}.rpm"
+    mode: "0644"
+  when: splunk_indexer_download_url is defined and splunk_indexer_download_url != ""
+
+- name: Copy Splunk Enterprise Package (if using local file)
+  ansible.builtin.copy:
+    src: "splunk-{{ splunk_indexer_version }}.rpm"
+    dest: "/tmp/splunk-{{ splunk_indexer_version }}.rpm"
+    mode: "0644"
+  when: splunk_indexer_download_url is not defined or splunk_indexer_download_url == ""
+
+- name: Install Splunk Enterprise (RedHat/CentOS/RHEL)
+  ansible.builtin.dnf:
+    name: "/tmp/splunk-{{ splunk_indexer_version }}.rpm"
+    state: present
+  when: ansible_os_family == 'RedHat'
+
+- name: Install Splunk Enterprise (Debian/Ubuntu)
+  ansible.builtin.apt:
+    deb: "/tmp/splunk-{{ splunk_indexer_version }}.deb"
+    state: present
+    update_cache: true
+  when: ansible_os_family == 'Debian'
+
+- name: Set ownership of Splunk installation directory
+  ansible.builtin.file:
+    path: "{{ splunk_indexer_install_dir }}"
+    owner: splunk
+    group: splunk
+    recurse: true
+
+- name: Accept Splunk license and set admin password on first start
+  ansible.builtin.command:
+    cmd: >-
+      {{ splunk_indexer_install_dir }}/bin/splunk start
+      --accept-license --answer-true
+      --no-prompt
+      --seed-passwd '{{ splunk_indexer_admin_password }}'
+    args:
+      creates: "{{ splunk_indexer_install_dir }}/etc/passwd"
+  become_user: splunk
+  register: splunk_first_start
+
+- name: Stop Splunk to configure it properly
+  ansible.builtin.command:
+    cmd: "{{ splunk_indexer_install_dir }}/bin/splunk stop"
+  become_user: splunk
+  when: splunk_first_start is changed
+
+- name: Enable Splunk boot-start (creates systemd unit)
+  ansible.builtin.command:
+    cmd: >-
+      {{ splunk_indexer_install_dir }}/bin/splunk enable boot-start
+      -user splunk --accept-license --answer-true
+    args:
+      creates: /etc/systemd/system/splunk.service
+
+- name: Configure Splunk server name
+  ansible.builtin.lineinfile:
+    path: "{{ splunk_indexer_install_dir }}/etc/system/local/server.conf"
+    line: |
+      [general]
+      serverName = {{ splunk_indexer_server_name }}
+    create: true
+    owner: splunk
+    group: splunk
+    mode: "0644"
+  notify: Restart Splunk
+
+- name: Configure Splunk web interface
+  ansible.builtin.lineinfile:
+    path: "{{ splunk_indexer_install_dir }}/etc/system/local/web.conf"
+    line: |
+      [settings]
+      httpport = {{ splunk_indexer_web_port }}
+      mgmtHostPort = {{ splunk_indexer_mgmt_port }}
+    create: true
+    owner: splunk
+    group: splunk
+    mode: "0644"
+  notify: Restart Splunk
+
+- name: Configure Splunk inputs (receiving port)
+  ansible.builtin.template:
+    src: inputs.conf.j2
+    dest: "{{ splunk_indexer_install_dir }}/etc/system/local/inputs.conf"
+    owner: splunk
+    group: splunk
+    mode: "0644"
+  notify: Restart Splunk
+
+- name: Configure Splunk indexes
+  ansible.builtin.template:
+    src: indexes.conf.j2
+    dest: "{{ splunk_indexer_install_dir }}/etc/system/local/indexes.conf"
+    owner: splunk
+    group: splunk
+    mode: "0644"
+  notify: Restart Splunk
+
+- name: Open firewall ports for Splunk
+  ansible.builtin.command:
+    cmd: "firewall-cmd --permanent --add-port={{ item }}"
+  loop: "{{ splunk_indexer_firewall_ports }}"
+  when: ansible_os_family == 'RedHat'
+  register: splunk_firewall_changes
+  changed_when: "'ALREADY_ENABLED' not in splunk_firewall_changes.stderr"
+
+- name: Reload firewalld for Splunk ports
+  ansible.builtin.command:
+    cmd: "firewall-cmd --reload"
+  when: ansible_os_family == 'RedHat' and splunk_firewall_changes is changed
+
+- name: Start and enable Splunk service
+  ansible.builtin.systemd:
+    name: splunk
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Wait for Splunk to be ready
+  ansible.builtin.uri:
+    url: "http://{{ ansible_default_ipv4.address }}:{{ splunk_indexer_web_port }}/en-US/account/login"
+    method: GET
+    status_code: 200
+  register: splunk_ready
+  until: splunk_ready.status == 200
+  retries: 30
+  delay: 10
+
+- name: Display Splunk access information
+  ansible.builtin.debug:
+    msg: |
+      Splunk Enterprise is now running!
+      Web Interface: http://{{ ansible_default_ipv4.address }}:{{ splunk_indexer_web_port }}
+      Username: {{ splunk_indexer_admin_user }}
+      Password: {{ splunk_indexer_admin_password }}
+      Receiving Port: {{ splunk_indexer_receiving_port }}

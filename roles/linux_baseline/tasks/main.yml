@@ -34,14 +34,17 @@
       when: ansible_facts.os_family == "RedHat"
 
     - name: RHEL | Add allowed ports to firewalld
-      ansible.posix.firewalld:
-        service: false
-        port: "{{ item.port }}/{{ item.proto }}"
-        permanent: true
-        immediate: true
-        state: "{{ item.rule }}"
+      ansible.builtin.command:
+        cmd: "firewall-cmd --permanent --add-port={{ item.port }}/{{ item.proto }}"
       loop: "{{ firewall_allowed_ports }}"
-      when: ansible_facts.os_family == "RedHat"
+      when: ansible_facts.os_family == "RedHat" and item.rule == "enabled"
+      register: firewall_changes
+      changed_when: "'ALREADY_ENABLED' not in firewall_changes.stderr"
+
+    - name: RHEL | Reload firewalld
+      ansible.builtin.command:
+        cmd: "firewall-cmd --reload"
+      when: ansible_facts.os_family == "RedHat" and firewall_changes is changed
 
     - name: Ubuntu | Ensure ufw is installed
       ansible.builtin.apt:
@@ -51,12 +54,12 @@
       when: ansible_facts.os_family == "Debian"
 
     - name: Ubuntu | Allow ports in ufw
-      community.general.ufw:
-        rule: allow
-        port: "{{ item.port }}"
-        proto: "{{ item.proto }}"
+      ansible.builtin.command:
+        cmd: "ufw allow {{ item.port }}/{{ item.proto }}"
       loop: "{{ firewall_allowed_ports }}"
-      when: ansible_facts.os_family == "Debian"
+      when: ansible_facts.os_family == "Debian" and item.rule == "enabled"
+      register: ufw_changes
+      changed_when: "'Rule added' in ufw_changes.stdout or 'Rule updated' in ufw_changes.stdout"
 
     - name: Ubuntu | Enable ufw
       ansible.builtin.command:

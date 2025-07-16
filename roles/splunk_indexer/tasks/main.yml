@@ -28,19 +28,19 @@
     home: /home/splunk
     create_home: true
 
-- name: Download Splunk Enterprise Package (if using URL)
+- name: Copy Splunk Enterprise Package from local files
+  ansible.builtin.copy:
+    src: "downloads/{{ splunk_indexer_local_file }}"
+    dest: "/tmp/splunk-{{ splunk_indexer_version }}.rpm"
+    mode: "0644"
+  when: splunk_indexer_use_local_file | default(true)
+
+- name: Download Splunk Enterprise Package (fallback if local file not available)
   ansible.builtin.get_url:
     url: "{{ splunk_indexer_download_url }}"
     dest: "/tmp/splunk-{{ splunk_indexer_version }}.rpm"
     mode: "0644"
-  when: splunk_indexer_download_url is defined and splunk_indexer_download_url != ""
-
-- name: Copy Splunk Enterprise Package (if using local file)
-  ansible.builtin.copy:
-    src: "splunk-{{ splunk_indexer_version }}.rpm"
-    dest: "/tmp/splunk-{{ splunk_indexer_version }}.rpm"
-    mode: "0644"
-  when: splunk_indexer_download_url is not defined or splunk_indexer_download_url == ""
+  when: not (splunk_indexer_use_local_file | default(true)) and splunk_indexer_download_url != ""
 
 - name: Install Splunk Enterprise (RedHat/CentOS/RHEL)
   ansible.builtin.dnf:

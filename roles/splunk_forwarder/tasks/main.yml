@@ -6,11 +6,26 @@
     shell: /sbin/nologin
     system: true
 
-- name: Download Splunk Universal Forwarder Package
+- name: Copy Splunk Universal Forwarder Package from local files (RPM)
+  ansible.builtin.copy:
+    src: "downloads/{{ splunk_forwarder_local_file_rpm }}"
+    dest: "/tmp/splunkforwarder-{{ splunk_forwarder_version }}.rpm"
+    mode: "0644"
+  when: splunk_forwarder_use_local_file | default(true) and ansible_os_family == 'RedHat'
+
+- name: Copy Splunk Universal Forwarder Package from local files (DEB)
+  ansible.builtin.copy:
+    src: "downloads/{{ splunk_forwarder_local_file_deb }}"
+    dest: "/tmp/splunkforwarder-{{ splunk_forwarder_version }}.deb"
+    mode: "0644"
+  when: splunk_forwarder_use_local_file | default(true) and ansible_os_family == 'Debian'
+
+- name: Download Splunk Universal Forwarder Package (fallback)
   ansible.builtin.get_url:
     url: "{{ splunk_forwarder_download_url }}"
     dest: "/tmp/splunkforwarder-{{ splunk_forwarder_version }}.{{ 'rpm' if ansible_os_family == 'RedHat' else 'deb' }}"
     mode: "0644"
+  when: not (splunk_forwarder_use_local_file | default(true)) and splunk_forwarder_download_url != ""
 
 - name: Install Splunk Forwarder (RedHat/CentOS/RHEL 8+)
   ansible.builtin.dnf: # <--- CHANGED FROM YUM TO DNF

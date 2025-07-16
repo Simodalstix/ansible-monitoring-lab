@@ -4,9 +4,12 @@
 
 splunk_indexer_version: "9.4.0"
 
-# Download URL for Splunk Enterprise (you'll need to get the real URL from Splunk's website)
-# This is a placeholder - replace with actual download URL from splunk.com
-splunk_indexer_download_url: "https://download.splunk.com/products/splunk/releases/{{ splunk_indexer_version }}/linux/splunk-{{ splunk_indexer_version }}-Linux-x86_64.rpm"
+# Use local file instead of download URL
+# Place the Splunk Enterprise RPM in files/downloads/ directory
+splunk_indexer_use_local_file: true
+splunk_indexer_local_file: "splunk-{{ splunk_indexer_version }}-Linux-x86_64.rpm"
+# Fallback download URL (if local file not available)
+splunk_indexer_download_url: ""
 
 splunk_indexer_install_dir: "/opt/splunk"
 

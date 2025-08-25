@@ -1,7 +1,0 @@
-# playbooks/grafana.yml
----
-- name: Deploy Grafana
-  hosts: grafana.simo.local # Target your Grafana VM
-  become: true
-  roles:
-    - grafana

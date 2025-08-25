@@ -1,7 +1,0 @@
-# playbooks/splunk_forwarder.yml
----
-- name: Deploy Splunk Universal Forwarders to Linux hosts
-  hosts: ubuntu, rhel_forwarders # Target both groups
-  become: true
-  roles:
-    - splunk_forwarder

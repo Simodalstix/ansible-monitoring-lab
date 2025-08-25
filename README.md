@@ -1,67 +1,70 @@
-# Ansible Splunk Setup
+# Ansible Web Application Lab
 
-This project provisions a hybrid monitoring and logging environment across VMware-based infrastructure using Ansible.
+This project demonstrates practical infrastructure automation using Ansible to deploy and manage a complete web application stack.
 
-It automates:
+## What This Deploys
 
-- **Active Directory setup** for centralized domain control (on Windows Server)
-- **Splunk Enterprise + Universal Forwarders** for log collection
-- **Prometheus + Grafana** configuration for metrics monitoring
-- Basic integration with **pfSense**, **Ubuntu**, and **RHEL** VMs
+- **Django Polls App** - A functional web application with database
+- **PostgreSQL** - Database backend
+- **Prometheus + Grafana** - Metrics monitoring and dashboards
+- **Loki + Promtail** - Log aggregation and analysis
+- **Nginx** - Reverse proxy and static file serving
 
-## Lab Overview
+## Architecture
 
-This is part of a larger enterprise-style lab running on VMware Workstation Pro. The goal is to simulate a real-world environment with centralized authentication and full-stack observability.
+**Single App Server VM:**
+- All services consolidated on one Ubuntu/RHEL VM
+- Demonstrates real-world application deployment
+- Full observability stack included
 
-### Components
+**Existing Infrastructure:**
+- AD Server for authentication (optional integration)
+- pfSense for networking/firewall
 
-- **Windows Server 2022** — Domain Controller (AD DS, DNS)
-- **RHEL & Ubuntu** — Linux nodes joined to the domain
-- **Splunk Enterprise** — Centralized log aggregation
-- **Universal Forwarders** — Installed on Linux clients
-- **Prometheus + Grafana** — System metrics collection and dashboards
-- **pfSense** — Firewall and routing layer
+## Quick Start
 
-## Getting Started
-
-1. Clone the repo:
-
-   ```bash
-   git clone https://github.com/Simodalstix/ansible-splunk-setup.git
-   cd ansible-splunk-setup
-   ```
-
-2. Set up Python virtual environment and install dependencies:
-
+1. **Setup environment:**
    ```bash
    make install
    ```
 
-3. Lint your Ansible config:
-
+2. **Configure your inventory:**
    ```bash
-   make lint
+   cp inventory.yml.example inventory.yml
+   # Edit inventory.yml with your VM details
    ```
 
-4. Run your playbook:
+3. **Deploy everything:**
    ```bash
    ansible-playbook -i inventory.yml site.yml
    ```
 
-> Make sure you’ve set up your inventory and `group_vars` to match your VM environment.
+4. **Access services:**
+   - Django App: `http://your-vm:8000`
+   - Grafana: `http://your-vm:3000` (admin/admin)
+   - Prometheus: `http://your-vm:9090`
 
-## Screenshots (Coming Soon)
+## What You'll Learn
 
-Planned additions:
+- Ansible role development and best practices
+- Database deployment and configuration
+- Web application deployment with Django
+- Monitoring stack setup (Prometheus/Grafana)
+- Log aggregation with Loki
+- Service orchestration and dependencies
 
-- Domain-joined Linux clients with `realm list`
-- Config excerpts from `/etc/sssd/sssd.conf`
-- Splunk web UI + log ingestion examples
-- Grafana dashboards + Prometheus targets
-- AD DNS + pfSense routing setup
+## Project Structure
 
-## Notes
+```
+├── inventory.yml          # Your VM configuration
+├── site.yml              # Main playbook
+├── group_vars/all.yml     # Global variables
+└── roles/
+    ├── baseline/          # System preparation
+    ├── database/          # PostgreSQL setup
+    ├── webapp/            # Django application
+    ├── monitoring/        # Prometheus + Grafana
+    └── logging/           # Loki + Promtail
+```
 
-- This is a work in progress.
-- Designed for offline, local VMware environments — no cloud dependency.
-- Inspired by real-world DevOps, Platform, and Infrastructure engineering practices.
+This is a practical, hands-on project that demonstrates real infrastructure automation scenarios you'd encounter in production environments.

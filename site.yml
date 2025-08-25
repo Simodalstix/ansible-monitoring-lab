@@ -1,0 +1,10 @@
+---
+- name: Deploy Web Application Stack
+  hosts: webservers
+  become: yes
+  roles:
+    - baseline
+    - database
+    - webapp
+    - monitoring
+    - logging

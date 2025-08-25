@@ -1,0 +1,41 @@
+---
+- name: Install PostgreSQL
+  package:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+    state: present
+
+- name: Start and enable PostgreSQL
+  service:
+    name: postgresql
+    state: started
+    enabled: yes
+
+- name: Create database
+  postgresql_db:
+    name: "{{ db_name }}"
+    state: present
+  become_user: postgres
+
+- name: Create database user
+  postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    db: "{{ db_name }}"
+    priv: ALL
+    state: present
+  become_user: postgres
+
+- name: Configure PostgreSQL authentication
+  lineinfile:
+    path: /etc/postgresql/*/main/pg_hba.conf
+    regexp: '^local\s+all\s+all\s+peer$'
+    line: 'local   all             all                                     md5'
+  notify: restart postgresql
+
+- name: Restart PostgreSQL to apply config
+  service:
+    name: postgresql
+    state: restarted

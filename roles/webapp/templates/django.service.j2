@@ -1,0 +1,15 @@
+[Unit]
+Description=Django Web Application
+After=network.target postgresql.service
+
+[Service]
+Type=exec
+User={{ app_user }}
+Group={{ app_user }}
+WorkingDirectory={{ app_dir }}/{{ app_name }}
+ExecStart={{ app_dir }}/venv/bin/gunicorn --bind 0.0.0.0:8000 {{ app_name }}.wsgi:application
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

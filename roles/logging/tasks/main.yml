@@ -1,0 +1,59 @@
+---
+- name: Create loki user
+  user:
+    name: loki
+    system: yes
+    shell: /bin/false
+    home: /var/lib/loki
+    create_home: yes
+
+- name: Download and install Loki
+  get_url:
+    url: https://github.com/grafana/loki/releases/download/v2.9.0/loki-linux-amd64.zip
+    dest: /tmp/loki.zip
+
+- name: Extract Loki
+  unarchive:
+    src: /tmp/loki.zip
+    dest: /tmp
+    remote_src: yes
+
+- name: Copy Loki binary
+  copy:
+    src: /tmp/loki-linux-amd64
+    dest: /usr/local/bin/loki
+    mode: '0755'
+    owner: loki
+    group: loki
+    remote_src: yes
+
+- name: Create Loki directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: loki
+    group: loki
+  loop:
+    - /etc/loki
+    - /var/lib/loki
+
+- name: Configure Loki
+  template:
+    src: loki.yml.j2
+    dest: /etc/loki/loki.yml
+    owner: loki
+    group: loki
+  notify: restart loki
+
+- name: Create Loki systemd service
+  template:
+    src: loki.service.j2
+    dest: /etc/systemd/system/loki.service
+  notify: restart loki
+
+- name: Start and enable Loki
+  systemd:
+    name: loki
+    state: started
+    enabled: yes
+    daemon_reload: yes

@@ -1,0 +1,67 @@
+---
+- name: Create prometheus user
+  user:
+    name: prometheus
+    system: yes
+    shell: /bin/false
+    home: /var/lib/prometheus
+    create_home: yes
+
+- name: Download and install Prometheus
+  unarchive:
+    src: https://github.com/prometheus/prometheus/releases/download/v2.45.0/prometheus-2.45.0.linux-amd64.tar.gz
+    dest: /tmp
+    remote_src: yes
+    creates: /tmp/prometheus-2.45.0.linux-amd64
+
+- name: Copy Prometheus binaries
+  copy:
+    src: /tmp/prometheus-2.45.0.linux-amd64/{{ item }}
+    dest: /usr/local/bin/
+    mode: '0755'
+    owner: prometheus
+    group: prometheus
+    remote_src: yes
+  loop:
+    - prometheus
+    - promtool
+
+- name: Create Prometheus directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: prometheus
+    group: prometheus
+  loop:
+    - /etc/prometheus
+    - /var/lib/prometheus
+
+- name: Configure Prometheus
+  template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+  notify: restart prometheus
+
+- name: Create Prometheus systemd service
+  template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+  notify: restart prometheus
+
+- name: Install Grafana
+  apt:
+    deb: https://dl.grafana.com/enterprise/release/grafana-enterprise_10.1.0_amd64.deb
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Start and enable services
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  loop:
+    - prometheus
+    - grafana-server

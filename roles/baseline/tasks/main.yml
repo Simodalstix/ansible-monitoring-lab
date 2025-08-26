@@ -23,14 +23,23 @@
     home: "{{ app_dir }}"
     create_home: yes
 
-- name: Configure firewall
+- name: Configure firewall (Ubuntu)
   ufw:
     rule: allow
     port: "{{ item }}"
   loop: "{{ firewall_ports }}"
   when: ansible_os_family == "Debian"
 
-- name: Enable firewall
+- name: Enable firewall (Ubuntu)
   ufw:
     state: enabled
   when: ansible_os_family == "Debian"
+
+- name: Configure firewall (RHEL)
+  firewalld:
+    port: "{{ item }}/tcp"
+    permanent: yes
+    state: enabled
+    immediate: yes
+  loop: "{{ firewall_ports }}"
+  when: ansible_os_family == "RedHat"

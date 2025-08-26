@@ -50,11 +50,17 @@
     dest: /etc/systemd/system/prometheus.service
   notify: restart prometheus
 
-- name: Install Grafana
+- name: Install Grafana (Ubuntu)
   apt:
     deb: https://dl.grafana.com/enterprise/release/grafana-enterprise_10.1.0_amd64.deb
     state: present
   when: ansible_os_family == "Debian"
+
+- name: Install Grafana (RHEL)
+  yum:
+    name: https://dl.grafana.com/enterprise/release/grafana-enterprise-10.1.0-1.x86_64.rpm
+    state: present
+  when: ansible_os_family == "RedHat"
 
 - name: Start and enable services
   systemd:

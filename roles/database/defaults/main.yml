@@ -1,0 +1,9 @@
+# Default values for database role
+db_name: polls_db
+db_user: polls_user
+db_password: changeme123
+
+# PostgreSQL settings
+postgresql_daemon: postgresql
+postgresql_data_dir: /var/lib/pgsql/data
+postgresql_bin_path: /usr/bin

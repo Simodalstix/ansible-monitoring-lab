@@ -1,41 +1,40 @@
 ---
-- name: Install PostgreSQL
+- name: Install PostgreSQL (Debian/Ubuntu)
   package:
     name:
       - postgresql
       - postgresql-contrib
       - python3-psycopg2
     state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install PostgreSQL (RHEL/CentOS)
+  package:
+    name:
+      - postgresql-server
+      - postgresql-contrib
+      - python3-psycopg2
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Check if PostgreSQL database is initialized
+  stat:
+    path: "{{ postgresql_data_dir }}/PG_VERSION"
+  register: pgdata_dir_version
+  when: ansible_os_family == "RedHat"
+
+- name: Initialize PostgreSQL database (RHEL/CentOS)
+  command: "{{ postgresql_bin_path }}/postgresql-setup initdb"
+  when: ansible_os_family == "RedHat" and not pgdata_dir_version.stat.exists
+  become: yes
 
 - name: Start and enable PostgreSQL
   service:
-    name: postgresql
+    name: "{{ postgresql_daemon }}"
     state: started
     enabled: yes
 
-- name: Create database
-  postgresql_db:
-    name: "{{ db_name }}"
-    state: present
-  become_user: postgres
-
-- name: Create database user
-  postgresql_user:
-    name: "{{ db_user }}"
-    password: "{{ db_password }}"
-    db: "{{ db_name }}"
-    priv: ALL
-    state: present
-  become_user: postgres
-
-- name: Configure PostgreSQL authentication
-  lineinfile:
-    path: /etc/postgresql/*/main/pg_hba.conf
-    regexp: '^local\s+all\s+all\s+peer$'
-    line: 'local   all             all                                     md5'
-  notify: restart postgresql
-
-- name: Restart PostgreSQL to apply config
-  service:
-    name: postgresql
-    state: restarted
+# Database setup temporarily disabled - PostgreSQL is installed and running
+# Manual setup: sudo -u postgres createdb polls_db
+# Manual setup: sudo -u postgres psql -c "CREATE USER polls_user WITH PASSWORD 'changeme123';"
+# Manual setup: sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE polls_db TO polls_user;"

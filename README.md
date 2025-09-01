@@ -3,13 +3,13 @@
 [![Ansible](https://img.shields.io/badge/ansible-2.9+-blue.svg)](https://www.ansible.com)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-A practical Ansible lab that deploys a complete web application stack with monitoring on a single VM. Demonstrates Django app deployment, PostgreSQL database, and observability stack (Prometheus, Grafana, Loki).
+A practical Ansible lab that deploys a complete web application stack with monitoring on a single VM. Demonstrates Django app deployment, SQLite database, and observability stack (Prometheus, Grafana, Loki).
 
 ## Architecture
 
 **Single VM Stack:**
 - Django Polls application (port 8000)
-- PostgreSQL database
+- SQLite database (simple, zero-config)
 - Prometheus metrics (port 9090)
 - Grafana dashboards (port 3000)
 - Loki log aggregation (port 3100)
@@ -42,7 +42,7 @@ A practical Ansible lab that deploys a complete web application stack with monit
 
 4. **Deploy stack:**
    ```bash
-   ansible-playbook -i inventories/hosts.ini playbooks/main.yml -K
+   ansible-playbook -i inventories/hosts.ini playbooks/site.yml -K
    ```
 
 5. **Access services:**
@@ -56,13 +56,13 @@ A practical Ansible lab that deploys a complete web application stack with monit
 ├── inventories/
 │   └── hosts.ini              # VM configuration
 ├── playbooks/
-│   └── main.yml               # Main deployment playbook
+│   └── site.yml               # Main deployment playbook
 ├── roles/                     # Ansible roles
 │   ├── baseline/              # System setup
-│   ├── database/              # PostgreSQL
-│   ├── webapp/                # Django app
+│   ├── database/              # PostgreSQL (installed but not used)
+│   ├── webapp/                # Django app with SQLite
 │   ├── monitoring/            # Prometheus + Grafana
-│   └── logging/               # Loki + Promtail
+│   └── logging/               # Loki
 ├── group_vars/
 │   └── all.yml                # Global variables
 └── ansible.cfg                # Ansible configuration
@@ -86,7 +86,7 @@ sudo visudo
 # Add: ansible ALL=(ALL) NOPASSWD:ALL
 
 # Or use -K flag for password prompt
-ansible-playbook -i inventories/hosts.ini playbooks/main.yml -K
+ansible-playbook -i inventories/hosts.ini playbooks/site.yml -K
 ```
 
 **Connection Test:**

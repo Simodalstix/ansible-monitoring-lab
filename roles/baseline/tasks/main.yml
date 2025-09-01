@@ -3,7 +3,7 @@
   package:
     update_cache: yes
 
-- name: Install essential packages
+- name: Install essential packages (Debian/Ubuntu)
   package:
     name:
       - curl
@@ -14,6 +14,25 @@
       - python3-venv
       - nginx
     state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install essential packages (RHEL/CentOS)
+  package:
+    name:
+      - curl
+      - wget
+      - git
+      - python3
+      - python3-pip
+      - nginx
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Install virtualenv via pip (RHEL/CentOS)
+  pip:
+    name: virtualenv
+    executable: pip3
+  when: ansible_os_family == "RedHat"
 
 - name: Create webapp user
   user:

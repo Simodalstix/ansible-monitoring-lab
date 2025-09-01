@@ -1,4 +1,9 @@
 ---
+- name: Install unzip package
+  package:
+    name: unzip
+    state: present
+
 - name: Create loki user
   user:
     name: loki
@@ -7,16 +12,17 @@
     home: /var/lib/loki
     create_home: yes
 
-- name: Download and install Loki
+- name: Download Loki zip
   get_url:
-    url: https://github.com/grafana/loki/releases/download/v2.9.0/loki-linux-amd64.zip
+    url: https://github.com/grafana/loki/releases/download/v3.5.3/loki-linux-amd64.zip
     dest: /tmp/loki.zip
 
-- name: Extract Loki
+- name: Extract Loki binary
   unarchive:
     src: /tmp/loki.zip
     dest: /tmp
     remote_src: yes
+    creates: /tmp/loki-linux-amd64
 
 - name: Copy Loki binary
   copy:

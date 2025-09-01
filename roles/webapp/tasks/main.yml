@@ -8,40 +8,32 @@
     mode: '0755'
 
 - name: Create virtual environment
-  pip:
-    name: pip
-    virtualenv: "{{ app_dir }}/venv"
-    virtualenv_python: python3
+  command: python3 -m venv "{{ app_dir }}/venv"
+  args:
+    creates: "{{ app_dir }}/venv/bin/activate"
   become_user: "{{ app_user }}"
 
 - name: Install Django and dependencies
   pip:
     name:
       - django
-      - psycopg2-binary
       - gunicorn
     virtualenv: "{{ app_dir }}/venv"
   become_user: "{{ app_user }}"
 
 - name: Create Django project
-  django_manage:
-    command: startproject
-    name: "{{ app_name }}"
-    path: "{{ app_dir }}"
-    virtualenv: "{{ app_dir }}/venv"
-  become_user: "{{ app_user }}"
+  command: "{{ app_dir }}/venv/bin/django-admin startproject {{ app_name }}"
   args:
+    chdir: "{{ app_dir }}"
     creates: "{{ app_dir }}/{{ app_name }}"
+  become_user: "{{ app_user }}"
 
 - name: Create polls app
-  django_manage:
-    command: startapp
-    name: polls
-    path: "{{ app_dir }}/{{ app_name }}"
-    virtualenv: "{{ app_dir }}/venv"
-  become_user: "{{ app_user }}"
+  command: "{{ app_dir }}/venv/bin/python manage.py startapp polls"
   args:
+    chdir: "{{ app_dir }}/{{ app_name }}"
     creates: "{{ app_dir }}/{{ app_name }}/polls"
+  become_user: "{{ app_user }}"
 
 - name: Configure Django settings
   template:

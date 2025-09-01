@@ -56,10 +56,17 @@
     state: present
   when: ansible_os_family == "Debian"
 
+- name: Import Grafana GPG key (RHEL)
+  rpm_key:
+    key: https://rpm.grafana.com/gpg.key
+    state: present
+  when: ansible_os_family == "RedHat"
+
 - name: Install Grafana (RHEL)
   yum:
     name: https://dl.grafana.com/enterprise/release/grafana-enterprise-10.1.0-1.x86_64.rpm
     state: present
+    disable_gpg_check: yes
   when: ansible_os_family == "RedHat"
 
 - name: Start and enable services

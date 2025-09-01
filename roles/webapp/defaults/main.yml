@@ -1,0 +1,4 @@
+# Default values for webapp role
+app_name: django_polls
+app_user: webapp
+app_dir: /opt/webapp

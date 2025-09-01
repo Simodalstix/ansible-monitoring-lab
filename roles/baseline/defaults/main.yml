@@ -1,0 +1,9 @@
+# Default values for baseline role
+app_user: webapp
+app_dir: /opt/webapp
+firewall_ports:
+  - 22
+  - 80
+  - 8000
+  - 3000
+  - 9090

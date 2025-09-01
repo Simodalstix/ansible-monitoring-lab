@@ -1,0 +1,2 @@
+# Default values for logging role
+loki_port: 3100

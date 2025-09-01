@@ -1,11 +1,14 @@
 install:
 	pip3 install ansible
 
+ping:
+	ansible -i inventories/hosts.ini all -m ping
+
 deploy:
-	ansible-playbook -i inventory.yml site.yml
+	ansible-playbook -i inventories/hosts.ini playbooks/main.yml -K
 
 check:
-	ansible-playbook -i inventory.yml site.yml --check
+	ansible-playbook -i inventories/hosts.ini playbooks/main.yml --check
 
-ping:
-	ansible -i inventory.yml all -m ping
+syntax:
+	ansible-playbook -i inventories/hosts.ini playbooks/main.yml --syntax-check

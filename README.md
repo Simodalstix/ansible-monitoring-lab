@@ -1,70 +1,96 @@
-# Ansible Web Application Lab
+# Ansible Monitoring Lab
 
-This project demonstrates practical infrastructure automation using Ansible to deploy and manage a complete web application stack.
+[![Ansible](https://img.shields.io/badge/ansible-2.9+-blue.svg)](https://www.ansible.com)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## What This Deploys
-
-- **Django Polls App** - A functional web application with database
-- **PostgreSQL** - Database backend
-- **Prometheus + Grafana** - Metrics monitoring and dashboards
-- **Loki + Promtail** - Log aggregation and analysis
-- **Nginx** - Reverse proxy and static file serving
+A practical Ansible lab that deploys a complete web application stack with monitoring on a single VM. Demonstrates Django app deployment, PostgreSQL database, and observability stack (Prometheus, Grafana, Loki).
 
 ## Architecture
 
-**Single App Server VM:**
-- All services consolidated on one Ubuntu/RHEL VM
-- Demonstrates real-world application deployment
-- Full observability stack included
+**Single VM Stack:**
+- Django Polls application (port 8000)
+- PostgreSQL database
+- Prometheus metrics (port 9090)
+- Grafana dashboards (port 3000)
+- Loki log aggregation (port 3100)
+- Nginx reverse proxy
 
-**Existing Infrastructure:**
-- AD Server for authentication (optional integration)
-- pfSense for networking/firewall
+## Prerequisites
+
+- Ansible 2.9+
+- Python 3.6+
+- SSH access to target VM
+- Sudo privileges on target VM
 
 ## Quick Start
 
-1. **Setup environment:**
+1. **Install Ansible:**
    ```bash
-   make install
+   pip3 install ansible
    ```
 
-2. **Configure your inventory:**
+2. **Configure inventory:**
    ```bash
-   cp inventory.yml.example inventory.yml
-   # Edit inventory.yml with your VM details
+   # Edit inventories/hosts.ini with your VM details
+   vim inventories/hosts.ini
    ```
 
-3. **Deploy everything:**
+3. **Test connectivity:**
    ```bash
-   ansible-playbook -i inventory.yml site.yml
+   ansible -i inventories/hosts.ini all -m ping
    ```
 
-4. **Access services:**
-   - Django App: `http://your-vm:8000`
-   - Grafana: `http://your-vm:3000` (admin/admin)
-   - Prometheus: `http://your-vm:9090`
+4. **Deploy stack:**
+   ```bash
+   ansible-playbook -i inventories/hosts.ini playbooks/main.yml -K
+   ```
 
-## What You'll Learn
-
-- Ansible role development and best practices
-- Database deployment and configuration
-- Web application deployment with Django
-- Monitoring stack setup (Prometheus/Grafana)
-- Log aggregation with Loki
-- Service orchestration and dependencies
+5. **Access services:**
+   - Django App: http://your-vm:8000
+   - Grafana: http://your-vm:3000 (admin/admin)
+   - Prometheus: http://your-vm:9090
 
 ## Project Structure
 
 ```
-├── inventory.yml          # Your VM configuration
-├── site.yml              # Main playbook
-├── group_vars/all.yml     # Global variables
-└── roles/
-    ├── baseline/          # System preparation
-    ├── database/          # PostgreSQL setup
-    ├── webapp/            # Django application
-    ├── monitoring/        # Prometheus + Grafana
-    └── logging/           # Loki + Promtail
+├── inventories/
+│   └── hosts.ini              # VM configuration
+├── playbooks/
+│   └── main.yml               # Main deployment playbook
+├── roles/                     # Ansible roles
+│   ├── baseline/              # System setup
+│   ├── database/              # PostgreSQL
+│   ├── webapp/                # Django app
+│   ├── monitoring/            # Prometheus + Grafana
+│   └── logging/               # Loki + Promtail
+├── group_vars/
+│   └── all.yml                # Global variables
+└── ansible.cfg                # Ansible configuration
 ```
 
-This is a practical, hands-on project that demonstrates real infrastructure automation scenarios you'd encounter in production environments.
+## Troubleshooting
+
+**SSH Issues:**
+```bash
+# Test SSH connection
+ssh -i ~/.ssh/id_rsa ansible@your-vm-ip
+
+# Add SSH key if needed
+ssh-copy-id -i ~/.ssh/id_rsa ansible@your-vm-ip
+```
+
+**Privilege Escalation:**
+```bash
+# Ensure user has sudo access
+sudo visudo
+# Add: ansible ALL=(ALL) NOPASSWD:ALL
+
+# Or use -K flag for password prompt
+ansible-playbook -i inventories/hosts.ini playbooks/main.yml -K
+```
+
+**Connection Test:**
+```bash
+# Verify inventory and connectivity
+ansible -i inventories/hosts.ini all -m setup --limit webservers
+```

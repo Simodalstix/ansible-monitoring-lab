@@ -59,17 +59,10 @@ Desktop.ini
 # SSH agent sockets (if ever committed accidentally)
 ssh-agent-*
 
-# ──────────────────────────────────────────────────────────────
-# 5) Downloaded Software Packages
-# ──────────────────────────────────────────────────────────────
-
-# Splunk downloads (large proprietary files)
-files/downloads/*.rpm
-files/downloads/*.deb
-files/downloads/*.tgz
-files/downloads/*.tar.gz
-
-# Keep the README but ignore actual downloads
-!files/downloads/README.md
+# Downloaded packages
+*.rpm
+*.deb
+*.tgz
+*.tar.gz
 
 # End of .gitignore
